@@ -1,0 +1,1 @@
+alter table tb_cliente change phone cell_phone varchar(11);
