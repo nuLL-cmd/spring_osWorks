@@ -23,17 +23,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.automatodev.osworks.domain.model.Cliente;
 import com.automatodev.osworks.domain.repository.ClienteRepository;
+import com.automatodev.osworks.domain.service.RegisterClientService;
 
 //Controlador rest, clase que contem os endpoints referente ao CRUD de uma determinada entidade
 
 //A anotação GetMapping recebe os parametros "endpoint" e no caso de pesquisas "endpoint/{valor}" no qual é apontada pela variavel do metodo, a anotação PathVariabels, indica que a propriedade do metodo
 //esta ligada ao valor do endpoint passado
+
 @RestController // INFORMA AO SPRING QUE ESTA CLASSE É UM CONTROLADOR REST 
 @RequestMapping("clientes") // SETA O ENDPOINT INICIAL DIRETAMENTE NA CLASSE
 public class ClienteController {
 	
 	@Autowired
 	ClienteRepository repository;
+
+	@Autowired
+	RegisterClientService registerCliente;
+
 	//METODO HTTP DO TIPO GET QUE RECUPERA TODOS OS DADOS DO BANCO
 	@GetMapping
 	public ResponseEntity<List<Cliente>> listar() {
@@ -45,17 +51,19 @@ public class ClienteController {
 			return ResponseEntity.notFound().build();
 						
 	}
-	@GetMapping("{id}") // METODO HTTP DO TIPO GET QUE RECUPERA UM SINGLE DATA POR ID
+	 // METODO HTTP DO TIPO GET QUE RECUPERA UM SINGLE DATA POR ID
+	@GetMapping("{id}")
 	public ResponseEntity<Cliente> getSingleCliente(@PathVariable long id) {
-		Optional<Cliente> optional = repository.findById(id);
+	Cliente byId = repository.findById(id);
 
-		if(optional.isPresent())
-			return ResponseEntity.ok(optional.get());
+		if(byId != null)
+			return ResponseEntity.ok(byId);
 		else
 			return ResponseEntity.notFound().build();
 		
 	}
-	@GetMapping("like/{charset}") // METODO HTTP DO TIPO GET QUE RECUPERA DADOS APARTIR DE UM OU MAIS CARACTERES DIGITADOS (QUEIVALENTE AO LIKE % SQL)
+	 // METODO HTTP DO TIPO GET QUE RECUPERA DADOS APARTIR DE UM OU MAIS CARACTERES DIGITADOS (QUEIVALENTE AO LIKE % SQL)
+	@GetMapping("like/{charset}")
 	public ResponseEntity<List<Cliente>> getFilter(@PathVariable String charset){
 		List<Cliente> filterClientes = new ArrayList<>();
 		filterClientes = repository.findByNameContaining(charset);
@@ -64,27 +72,30 @@ public class ClienteController {
 		else
 			return ResponseEntity.notFound().build();
 	}
-	@PostMapping // METODO DE ISERÇÃO DE UM DADO NO BANCO DE DADOS
+	// METODO DE ISERÇÃO DE UM DADO NO BANCO DE DADOS
+	@PostMapping 
 	@ResponseStatus(HttpStatus.CREATED)
 	public Cliente addCliente(@Valid @RequestBody Cliente cliente) {
-      return repository.save(cliente);
+      return registerCliente.saveCliente(cliente);
 
 	}
-	@PutMapping("{id}") // METODO DE UPDATE NO BANCO DE DADOS
+	// METODO DE UPDATE NO BANCO DE DADOS
+	@PutMapping("{id}") 
 	public ResponseEntity<Cliente> updateCliente(@PathVariable long id, @RequestBody Cliente cliente) {
 		if(!repository.existsById(id))
 			return ResponseEntity.notFound().build();
 		
 		cliente.setId(id);
-		cliente = repository.save(cliente);
+		cliente = registerCliente.saveCliente(cliente);
 		return ResponseEntity.ok(cliente);
 	}
-	@DeleteMapping("{id}") // METODO DE DELETE DO BANCO DE DADOS
+	 // METODO DE DELETE DO BANCO DE DADOS
+	@DeleteMapping("{id}")
 	public ResponseEntity<Void> deleteCliente(@PathVariable long id){
 		if (!repository.existsById(id))
 			return ResponseEntity.notFound().build();
 		
-		 repository.deleteById(id);
+		registerCliente.deleteCliente(id);
 		return ResponseEntity.noContent().build();
 	}
 	

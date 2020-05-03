@@ -11,4 +11,5 @@ import com.automatodev.osworks.domain.model.Cliente;
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 	List<Cliente> findByName(String name);
 	List<Cliente> findByNameContaining(String name);
+	Cliente findById(long id);
 }
